@@ -1,4 +1,5 @@
 #include "raylib.h"
+#include "Player.hpp"
 
 // NOTE: Gamepad name ID depends on drivers and OS
 #define XBOX_ALIAS_1 "xbox"
@@ -6,15 +7,7 @@
 // Constants
 constexpr unsigned int WIDTH = 800;
 constexpr unsigned int HEIGHT = 450;
-int gamepad = 1; // which gamepad to display
-
-// Set axis deadzones
-constexpr float leftStickDeadzoneX = 0.1f;
-constexpr float leftStickDeadzoneY = 0.1f;
-constexpr float rightStickDeadzoneX = 0.1f;
-constexpr float rightStickDeadzoneY = 0.1f;
-constexpr float leftTriggerDeadzone = -0.9f;
-constexpr float rightTriggerDeadzone = -0.9f;
+int gamepad = 2; // which gamepad to display
 
 //------------------------------------------------------------------------------------
 // Program main entry point
@@ -26,16 +19,18 @@ int main(void) {
     SetConfigFlags(FLAG_MSAA_4X_HINT);  // Set MSAA 4X hint before windows creation
     InitWindow(WIDTH, HEIGHT, "Platformer");
     SetTargetFPS(75);               // Set our game to run at 60 frames-per-second
-
     //--------------------------------------------------------------------------------------
 
+    // GameObjects init
+    Player player(Vector2(WIDTH/2, HEIGHT/5));
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         // Update
         //----------------------------------------------------------------------------------
-        // ...
+        player.GetInputs();
+        player.Update();
         //----------------------------------------------------------------------------------
 
         // Draw
@@ -43,26 +38,12 @@ int main(void) {
         BeginDrawing();
 
             ClearBackground(RAYWHITE);
+            player.Draw();
 
             // Some Testing
             // -----------------------------------------------------------------------------
-            DrawRectangle(200, 200, 40, 40, BLACK);
+            DrawRectangle(0, HEIGHT-50, WIDTH, 50, DARKPURPLE);
             // -----------------------------------------------------------------------------
-
-
-            // Gamepad stuff ---------------------------------------------------------------
-            if (IsGamepadAvailable(gamepad))
-            {
-                // Draw buttons: Keys
-                if (IsGamepadButtonDown(gamepad, GAMEPAD_BUTTON_RIGHT_FACE_LEFT)) DrawCircle(501, 151, 15, BLUE);
-                if (IsGamepadButtonDown(gamepad, GAMEPAD_BUTTON_RIGHT_FACE_DOWN)) DrawCircle(536, 187, 15, GREEN);
-                if (IsGamepadButtonDown(gamepad, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT)) DrawCircle(572, 151, 15, RED);
-                if (IsGamepadButtonDown(gamepad, GAMEPAD_BUTTON_RIGHT_FACE_UP)) DrawCircle(536, 115, 15, YELLOW);
-            }
-            else
-            {
-                DrawText(TextFormat("GP%d: NOT DETECTED", gamepad), 10, 10, 10, GRAY);
-            }
 
         EndDrawing();
         //----------------------------------------------------------------------------------
