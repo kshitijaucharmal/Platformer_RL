@@ -1,12 +1,17 @@
+#include <complex>
+#include <vector>
+
+#include "Camera.hpp"
+#include "Constants.hpp"
+#include "Platform.hpp"
 #include "raylib.h"
 #include "Player.hpp"
+#include "World.hpp"
 
 // NOTE: Gamepad name ID depends on drivers and OS
 #define XBOX_ALIAS_1 "xbox"
 
 // Constants
-constexpr unsigned int WIDTH = 800;
-constexpr unsigned int HEIGHT = 450;
 int gamepad = 2; // which gamepad to display
 
 //------------------------------------------------------------------------------------
@@ -17,32 +22,47 @@ int main(void) {
     //--------------------------------------------------------------------------------------
 
     SetConfigFlags(FLAG_MSAA_4X_HINT);  // Set MSAA 4X hint before windows creation
-    InitWindow(WIDTH, HEIGHT, "Platformer");
+    InitWindow(Constants::WIDTH, Constants::HEIGHT, "Platformer");
     SetTargetFPS(75);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
+    World world;
+
     // GameObjects init
-    Player player(Vector2(WIDTH/2, HEIGHT/5));
+    Player player(Vector2(Constants::WIDTH/2, Constants::HEIGHT/5));
+    CameraManager camera_manager(player.position, player.size);
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
+        float dt = GetFrameTime();
         // Update
         //----------------------------------------------------------------------------------
         player.GetInputs();
-        player.Update();
+        player.CheckCollisions(world);
+
+        world.Update(dt);
+        player.Update(dt);
+
+        camera_manager.Update(player.position);
         //----------------------------------------------------------------------------------
 
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
+            ClearBackground(BLACK);
+            BeginMode2D(camera_manager.camera);
+                world.Draw();
+                player.Draw();
+                camera_manager.DebugLines();
 
-            ClearBackground(RAYWHITE);
-            player.Draw();
+            EndMode2D();
 
-            // Some Testing
+            DrawText(player.isGrounded ? "TRUE" : "FALSE", 200, 30, 18, BLACK);
+
+            // Debug
             // -----------------------------------------------------------------------------
-            DrawRectangle(0, HEIGHT-50, WIDTH, 50, DARKPURPLE);
+            DrawFPS(10, 10);
             // -----------------------------------------------------------------------------
 
         EndDrawing();

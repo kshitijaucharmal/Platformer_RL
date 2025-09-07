@@ -5,8 +5,12 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(raylib REQUIRED)
 
-add_executable(${PROJECT_NAME} src/main.cpp
-        src/Player.cpp
-        src/Player.hpp)
+file(GLOB_RECURSE SOURCE_FILES src/*)
+
+set(ASSET_PATH "${CMAKE_SOURCE_DIR}/assets")
+
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
 target_link_libraries(${PROJECT_NAME} PRIVATE raylib)
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE ASSET_DIR="${ASSET_PATH}")

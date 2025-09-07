@@ -3,17 +3,25 @@
 //
 
 #include "Player.hpp"
+#include "World.hpp"
 
-#include <limits.h>
-
-Player::Player(const Vector2 pos) {
+Player::Player(Vector2 pos) {
+    pos -= size/2;
     position = pos;
+
+    collisionShape = Rectangle(pos.x, pos.y, size.x, size.y);
+
+    Image image = LoadImage(ASSET_DIR "/player/idle0.png");
+    ImageResize(&image, size.x, size.y);
+    // Load textures
+    texture = LoadTextureFromImage(image);
+    UnloadImage(image);
 }
 
 void Player::GetInputs() {
     horizontal.x = IsKeyDown(KEY_LEFT) ? -1 : IsKeyDown(KEY_RIGHT) ? 1 : 0;
 
-    if (IsKeyPressed(KEY_Z)) {
+    if (isGrounded && IsKeyPressed(KEY_Z)) {
         _canJump = true;
     }
     if (IsKeyReleased(KEY_Z) && velocity.y < 0) {
@@ -21,26 +29,53 @@ void Player::GetInputs() {
     }
 }
 
-void Player::Jump() {
-    velocity.y = jumpHeight;
+void Player::Jump(float dt) {
+    velocity.y = -jumpHeight;
 }
 
-void Player::Update() {
-    // Euler's method
-    velocity.x = (horizontal.x * speed);
+void Player::CheckCollisions(const World &world) {
+    for (const auto platform : world.platforms) {
+        if (CheckCollisionRecs(platform.collisionShape, collisionShape)){
+            const float prevBottom = position.y - velocity.y + size.y;
+
+            // Only resolve if falling onto the platform
+            if (prevBottom <= platform.position.y) {
+                position.y = platform.position.y - size.y;
+                velocity.y = 0;
+                isGrounded = true;
+            }
+        }
+    }
+}
+
+void Player::Update(float dt) {
+    velocity.x = (horizontal.x * speed * dt);
     // Gravity
-    velocity += acceleration;
+    velocity += acceleration * dt;
 
     position += velocity;
-    position.y = Clamp(position.y, INT_MIN, 400 - size.y);
+    // Simple Ground
+
+    collisionShape.x = position.x;
+    collisionShape.y = position.y;
 
     if (_canJump) {
-        Jump();
+        Jump(dt);
         _canJump = false;
+        isGrounded = false;
     }
 }
 
 void Player::Draw() {
-    DrawRectangle(position.x, position.y,size.x, size.y, RED);
+    // DrawRectangleRounded(
+    //     Rectangle{ position.x, position.y,size.x, size.y},
+    //     0.2,
+    //     10,
+    //     RED);
+
+    DrawTexture(texture, position.x, position.y, WHITE);
 }
 
+Player::~Player() {
+    UnloadTexture(texture);
+}
