@@ -32,6 +32,13 @@ public:
     float sprintMultiplier = 1.7f;
     bool _canJump = false;
 
+    // Better Platformer
+    float hangTime = 0.1f;
+    float hangTimeCtr;
+
+    float jumpBufferTime = 0.1f;
+    float jumpBufferCounter;
+
     Player(Vector2 pos);
     ~Player();
 

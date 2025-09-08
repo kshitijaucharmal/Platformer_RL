@@ -17,7 +17,7 @@ int gamepad = 2; // which gamepad to display
 //------------------------------------------------------------------------------------
 // Program main entry point
 //------------------------------------------------------------------------------------
-int main(void) {
+int main() {
     // Initialization
     //--------------------------------------------------------------------------------------
 
@@ -50,15 +50,13 @@ int main(void) {
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
-            ClearBackground(GRAY);
+            ClearBackground(RAYWHITE);
             BeginMode2D(camera_manager.camera);
                 world.Draw();
                 player.Draw();
                 camera_manager.DebugLines();
 
             EndMode2D();
-
-            DrawText(player.isGrounded ? "TRUE" : "FALSE", 200, 30, 18, BLACK);
 
             // Debug
             // -----------------------------------------------------------------------------

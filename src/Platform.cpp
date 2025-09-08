@@ -17,5 +17,10 @@ void Platform::Draw() {
         Rectangle(position.x, position.y, size.x, size.y),
         0.2,
         5,
-        RAYWHITE);
+        DARKPURPLE);
+    DrawRectangleRounded(
+        Rectangle(position.x + 2, position.y + 2, size.x - 4, size.y - 4),
+        0.2,
+        5,
+        PURPLE);
 }
