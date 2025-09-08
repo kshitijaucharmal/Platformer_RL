@@ -50,7 +50,7 @@ int main(void) {
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
-            ClearBackground(BLACK);
+            ClearBackground(GRAY);
             BeginMode2D(camera_manager.camera);
                 world.Draw();
                 player.Draw();
