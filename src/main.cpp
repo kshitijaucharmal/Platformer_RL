@@ -3,6 +3,7 @@
 
 #include "Camera.hpp"
 #include "Constants.hpp"
+#include "LevelGenerator.hpp"
 #include "Platform.hpp"
 #include "raylib.h"
 #include "Player.hpp"
@@ -26,11 +27,15 @@ int main() {
     SetTargetFPS(75);               // Set our game to run at 60 frames-per-second
     //--------------------------------------------------------------------------------------
 
+    // GameObjects init
+    LevelGenerator lvlGen;
     World world;
 
-    // GameObjects init
     Player player(Vector2(Constants::WIDTH/2, Constants::HEIGHT/5));
     CameraManager camera_manager(player.position, player.size);
+
+
+    lvlGen.GenerateFromImage(ASSET_DIR "/levels/map1.png", &world, &player);
 
     // Main game loop
     while (!WindowShouldClose())    // Detect window close button or ESC key
