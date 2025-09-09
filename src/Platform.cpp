@@ -11,7 +11,6 @@ Platform::Platform(int x, int y, int w, int h) {
     collisionShape = Rectangle(x, y, w, h);
 }
 
-
 void Platform::Draw() {
     DrawRectangleRounded(
         Rectangle(position.x, position.y, size.x, size.y),
@@ -23,4 +22,8 @@ void Platform::Draw() {
         0.2,
         5,
         PURPLE);
+}
+
+void Platform::Update(float dt) {
+    GameObject::Update(dt);
 }

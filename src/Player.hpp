@@ -1,6 +1,7 @@
 //
 // Created by kshitij on 06/09/25.
 //
+#include "GameObject.hpp"
 #include "raylib.h"
 #include "raymath.h"
 #include "World.hpp"
@@ -8,18 +9,12 @@
 #ifndef PLATFORMER_RL_PLAYER_HPP
 #define PLATFORMER_RL_PLAYER_HPP
 
-class Player {
+class Player : public GameObject{
 public:
     // Display
     Vector2 size = Vector2(40, 40);
 
-    // Basic
-    Vector2 position = {400, 400};
-    Vector2 velocity = {0, 0};
-    Vector2 acceleration = {0, 9.8f * 5};
-
     bool isGrounded = false;
-    Rectangle collisionShape;
 
     // Visual
     Texture2D texture;
@@ -43,8 +38,8 @@ public:
     ~Player();
 
     void GetInputs();
-    void Update(float dt);
-    void Draw();
+    void Update(float dt) override;
+    void Draw() override;
 
     void Jump(float dt);
 
