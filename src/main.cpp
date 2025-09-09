@@ -44,10 +44,11 @@ int main() {
         // Update
         //----------------------------------------------------------------------------------
         player.GetInputs();
-        player.CheckCollisions(world);
 
         world.Update(dt);
         player.Update(dt);
+
+        player.CheckCollisions(world);
 
         camera_manager.Update(player.position);
         //----------------------------------------------------------------------------------

@@ -7,6 +7,7 @@
 #include <string>
 
 #include "World.hpp"
+#include <algorithm>
 
 Player::Player(Vector2 pos) {
     pos -= size/2;
@@ -19,12 +20,6 @@ Player::Player(Vector2 pos) {
     acceleration = Vector2{0, 9.8f * 5};
 
     collisionShape = Rectangle(pos.x, pos.y, size.x, size.y);
-
-    // Image image = LoadImage(ASSET_DIR "/player/idle0.png");
-    // ImageResize(&image, size.x, size.y);
-    // // Load textures
-    // texture = LoadTextureFromImage(image);
-    // UnloadImage(image);
 }
 
 void Player::GetInputs() {
@@ -41,20 +36,53 @@ void Player::Jump(float dt) {
 
 void Player::CheckCollisions(const World &world) {
     bool colliding = false;
-    for (const auto platform : world.platforms) {
-        if (CheckCollisionRecs(platform.collisionShape, collisionShape)){
-            colliding = true;
-            const float prevBottom = position.y - velocity.y + size.y;
 
-            // Only resolve if falling onto the platform
-            if (prevBottom <= platform.position.y) {
+    Rectangle prevCollisionShape = {
+        position.x - velocity.x,
+        position.y - velocity.y,
+        size.x,
+        size.y
+    };
+
+    for (const auto &platform : world.platforms) {
+        if (CheckCollisionRecs(platform.collisionShape, collisionShape)) {
+            colliding = true;
+
+            float overlapLeft   = (collisionShape.x + collisionShape.width) - platform.collisionShape.x;
+            float overlapRight  = (platform.collisionShape.x + platform.collisionShape.width) - collisionShape.x;
+            float overlapTop    = (collisionShape.y + collisionShape.height) - platform.collisionShape.y;
+            float overlapBottom = (platform.collisionShape.y + platform.collisionShape.height) - collisionShape.y;
+
+            // Find smallest overlap → that’s the direction of resolution
+            float minOverlap = std::min({overlapLeft, overlapRight, overlapTop, overlapBottom});
+
+            if (minOverlap == overlapTop && prevCollisionShape.y + prevCollisionShape.height <= platform.collisionShape.y) {
+                // Landed on top
                 position.y = platform.position.y - size.y;
                 velocity.y = 0;
                 isGrounded = true;
             }
+            else if (minOverlap == overlapBottom && prevCollisionShape.y >= platform.collisionShape.y + platform.collisionShape.height) {
+                // Hit from below
+                position.y = platform.position.y + platform.size.y;
+                velocity.y = 0; // maybe bounce or stop
+            }
+            else if (minOverlap == overlapLeft && prevCollisionShape.x + prevCollisionShape.width <= platform.collisionShape.x) {
+                // Hit from left
+                position.x = platform.position.x - size.x;
+                velocity.x = 0;
+            }
+            else if (minOverlap == overlapRight && prevCollisionShape.x >= platform.collisionShape.x + platform.size.x) {
+                // Hit from right
+                position.x = platform.position.x + platform.size.x;
+                velocity.x = 0;
+            }
         }
     }
-    if (!colliding) isGrounded = false;
+
+    if (!colliding) {
+        isGrounded = false;
+    }
 }
 
 void Player::Update(float dt) {
@@ -98,8 +126,6 @@ void Player::Draw() {
         0.2,
         10,
         RED);
-
-    // DrawTexture(texture, position.x, position.y, WHITE);
 }
 
 Player::~Player() {
