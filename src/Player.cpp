@@ -12,9 +12,11 @@ Player::Player(Vector2 pos) {
     pos -= size/2;
     position = pos;
 
-    position = {400, 400};
-    velocity = {0, 0};
-    acceleration = {0, 9.8f * 5};
+    jumpBufferCounter = 0;
+    hangTimeCtr = 0;
+
+    velocity = Vector2{0, 0};
+    acceleration = Vector2{0, 9.8f * 5};
 
     collisionShape = Rectangle(pos.x, pos.y, size.x, size.y);
 

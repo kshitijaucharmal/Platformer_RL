@@ -14,7 +14,7 @@ public:
 
     std::vector<Platform> platforms;
 
-    void Update(float deltaTime);
+    static void Update(float deltaTime);
     void Draw();
 };
 
