@@ -20,6 +20,9 @@ class LevelGenerator {
 public:
     LevelGenerator();
 
+    std::vector<Vector2> possiblePlayerPositions;
+    std::vector<Vector2> GetPlayerPositionsFromMap(std::string imagePath);
+
     unsigned long rgb2hex(int r, int g, int b) {
         return ((r & 0xff) << 16) + ((g & 0xff) << 8) + (b & 0xff);
     }
@@ -27,5 +30,6 @@ public:
     std::map<unsigned long, TileType> mappings;
     int gridSize = 50;
 
-    void GenerateFromImage(std::string imagePath, World* world, Player* player);
+    void GenerateFromImage(std::string imagePath, World* world);
+    void SetPlayerPosition(Player& player);
 };

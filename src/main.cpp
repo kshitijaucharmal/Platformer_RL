@@ -1,7 +1,6 @@
 #include <complex>
 #include <iostream>
 #include <vector>
-#include <oneapi/tbb/task_arena.h>
 
 #include "Camera.hpp"
 #include "Constants.hpp"
@@ -11,6 +10,7 @@
 #include "Player.hpp"
 
 #include "imgui.h"
+#include "Lobby.hpp"
 #include "NetworkClient.hpp"
 #include "rlImGui.h"
 
@@ -54,10 +54,14 @@ int main() {
     Player player(Vector2(Constants::WIDTH/2, Constants::HEIGHT/5));
     CameraManager camera_manager(player.position, player.size);
 
-    lvlGen.GenerateFromImage(ASSET_DIR "/levels/lobby.png", &world, &player);
-
     NetworkClient networkClient;
     ENetPeer* peer = networkClient.ConnectToServerUI(&player);
+
+    Lobby lobby(lvlGen, world, player);
+
+    while (!lobby.IsEveryoneReady()) {
+        lobby.Loop(networkClient, camera_manager);
+    }
 
     Game mainGame(lvlGen, world, player);
     mainGame.Loop(networkClient, camera_manager);
@@ -66,7 +70,6 @@ int main() {
     //--------------------------------------------------------------------------------------
     networkClient.Disconnect();
 
-    CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
     return 0;

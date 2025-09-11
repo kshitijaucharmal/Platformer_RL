@@ -2,21 +2,26 @@
 // Created by kshitij on 11/9/25.
 //
 
-#include "Game.hpp"
+#include "Lobby.hpp"
 
-#include "imgui.h"
+#include <imgui.h>
+#include <iostream>
+#include <bits/ostream.tcc>
+
+#include "Camera.hpp"
+#include "NetworkClient.hpp"
 #include "rlImGui.h"
 
-Game::Game(LevelGenerator &lvlGen, World &world, Player &player) : lvlGen(lvlGen), world(world), player(player) {
-
-    // Generate main map (TODO: Will be in loop and random maps later)
-    lvlGen.GenerateFromImage(ASSET_DIR "/levels/map1.png", &world);
-    // Wiil be handled by server later
+Lobby::Lobby(LevelGenerator& lvlGen, World& world, Player& player): world(world), player(player) {
+    lvlGen.GenerateFromImage(ASSET_DIR "/levels/lobby.png", &world);
     lvlGen.SetPlayerPosition(player);
 }
 
-int Game::Loop(NetworkClient& networkClient, CameraManager &camera_manager) {
-    // Main game loop
+bool Lobby::IsEveryoneReady() {
+    return false;
+}
+bool ready;
+void Lobby::Loop(NetworkClient& networkClient, CameraManager& camera_manager) {
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
         float dt = GetFrameTime();
@@ -28,7 +33,7 @@ int Game::Loop(NetworkClient& networkClient, CameraManager &camera_manager) {
         player.Update(dt);
 
         player.CheckCollisions(world);
-        networkClient.SendPacket(player.username + "|X: " + std::to_string(player.position.x) + " Y: " + std::to_string(player.position.y));
+        networkClient.SendPacket("3|" + player.username + "|[" + std::to_string(player.position.x) + "," + std::to_string(player.position.y) + "]");
 
         camera_manager.Update(player.position);
         //----------------------------------------------------------------------------------
@@ -40,7 +45,6 @@ int Game::Loop(NetworkClient& networkClient, CameraManager &camera_manager) {
         BeginMode2D(camera_manager.camera);
         world.Draw();
         player.Draw();
-        camera_manager.DebugLines();
 
         EndMode2D();
 
@@ -52,12 +56,29 @@ int Game::Loop(NetworkClient& networkClient, CameraManager &camera_manager) {
         // start ImGui HUD
         rlImGuiBegin();
 
+        ImGui::Begin("Settings");
+        ImGui::Checkbox("Ready", &ready);
+
+        // Only send once
+        if (!isReady && ready) {
+            isReady = true;
+            std::cout << "Player " << player.username << "is ready." << std::endl;
+            networkClient.SendPacket("2|" + player.username + "|1");
+        }
+        if (isReady && !ready) {
+            isReady = false;
+            std::cout << "Player " << player.username << "is not ready." << std::endl;
+            networkClient.SendPacket("2|" + player.username + "|0");
+        }
+
+        ImGui::End();
+
         // end ImGui Content
         rlImGuiEnd();
 
         EndDrawing();
         //----------------------------------------------------------------------------------
     }
+    networkClient.SendPacket("4|" + player.username);
     CloseWindow();        // Close window and OpenGL context
-
 }
