@@ -5,11 +5,12 @@
 #include "LevelGenerator.hpp"
 
 #include <iostream>
+#include <utility>
 
 #include "Platform.hpp"
 #include "Player.hpp"
 #include "World.hpp"
-
+#include <random>
 
 LevelGenerator::LevelGenerator() {
     // Setup mappings
@@ -19,6 +20,11 @@ LevelGenerator::LevelGenerator() {
 }
 
 void LevelGenerator::GenerateFromImage(const std::string imagePath, World* world, Player* player) {
+    // Clear previous maps
+    world->platforms.clear();
+    std::vector<std::pair<float, float>> possiblePlayerPositions;
+
+    srand(time(nullptr));
     const auto mapImage = LoadImage(imagePath.c_str());
     for (int x = 0 ; x < mapImage.width ; x++) {
         for (int y = 0 ; y < mapImage.height ; y++) {
@@ -35,12 +41,19 @@ void LevelGenerator::GenerateFromImage(const std::string imagePath, World* world
                     world->platforms.emplace_back(x * gridSize, y * gridSize, gridSize, gridSize);
                     break;
                 case TileType::PLAYER:
-                    player->position.x = x * gridSize;
-                    player->position.y = y * gridSize;
+                    possiblePlayerPositions.push_back({x * gridSize, y * gridSize});
                     break;
                 default:
                     break;
             }
         }
     }
+    // Set Player position
+    if (possiblePlayerPositions.empty()) {
+        std::cout << "Player position not defined !!" << std::endl;
+        return;
+    }
+    int r = rand() % (possiblePlayerPositions.size());
+    player->position.x = possiblePlayerPositions[r].first;
+    player->position.y = possiblePlayerPositions[r].second;
 }
