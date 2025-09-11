@@ -14,6 +14,8 @@ add_library(imgui STATIC
         external/imgui/imgui_demo.cpp
 )
 
+add_subdirectory(external/enet)
+
 target_include_directories(imgui PUBLIC
         external/imgui
 )
@@ -23,5 +25,5 @@ file(GLOB_RECURSE SOURCE_FILES src/*)
 set(ASSET_PATH "${CMAKE_SOURCE_DIR}/assets")
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} PRIVATE raylib imgui)
+target_link_libraries(${PROJECT_NAME} PRIVATE raylib imgui enet)
 target_compile_definitions(${PROJECT_NAME} PRIVATE ASSET_DIR="${ASSET_PATH}")

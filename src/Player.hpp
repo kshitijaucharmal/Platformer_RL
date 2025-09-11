@@ -1,6 +1,8 @@
 //
 // Created by kshitij on 06/09/25.
 //
+#include <string>
+
 #include "GameObject.hpp"
 #include "raylib.h"
 #include "raymath.h"
@@ -15,6 +17,7 @@ public:
     Vector2 size = Vector2(40, 40);
 
     bool isGrounded = false;
+    std::string username;
 
     // Visual
     Texture2D texture;

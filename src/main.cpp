@@ -1,13 +1,17 @@
 #include <complex>
+#include <iostream>
 #include <vector>
+#include <oneapi/tbb/task_arena.h>
 
 #include "Camera.hpp"
 #include "Constants.hpp"
+#include "Game.hpp"
 #include "LevelGenerator.hpp"
 #include "raylib.h"
 #include "Player.hpp"
 
 #include "imgui.h"
+#include "NetworkClient.hpp"
 #include "rlImGui.h"
 
 // NOTE: Gamepad name ID depends on drivers and OS
@@ -50,57 +54,17 @@ int main() {
     Player player(Vector2(Constants::WIDTH/2, Constants::HEIGHT/5));
     CameraManager camera_manager(player.position, player.size);
 
+    lvlGen.GenerateFromImage(ASSET_DIR "/levels/lobby.png", &world, &player);
 
-    lvlGen.GenerateFromImage(ASSET_DIR "/levels/map1.png", &world, &player);
-    bool open = true;
+    NetworkClient networkClient;
+    ENetPeer* peer = networkClient.ConnectToServerUI(&player);
 
-    // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
-    {
-        float dt = GetFrameTime();
-        // Update
-        //----------------------------------------------------------------------------------
-        player.GetInputs();
-
-        world.Update(dt);
-        player.Update(dt);
-
-        player.CheckCollisions(world);
-
-        camera_manager.Update(player.position);
-        //----------------------------------------------------------------------------------
-
-        // Draw
-        //----------------------------------------------------------------------------------
-        BeginDrawing();
-            ClearBackground(RAYWHITE);
-            BeginMode2D(camera_manager.camera);
-                world.Draw();
-                player.Draw();
-                camera_manager.DebugLines();
-
-            EndMode2D();
-
-            // Debug
-            // -----------------------------------------------------------------------------
-            DrawFPS(10, 10);
-            // -----------------------------------------------------------------------------
-
-        // start ImGui Conent
-        rlImGuiBegin();
-
-        // show ImGui Content
-        ImGui::ShowDemoWindow(&open);
-
-        // end ImGui Content
-        rlImGuiEnd();
-
-        EndDrawing();
-        //----------------------------------------------------------------------------------
-    }
+    Game mainGame(lvlGen, world, player);
+    mainGame.Loop(networkClient, camera_manager);
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
+    networkClient.Disconnect();
 
     CloseWindow();        // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
