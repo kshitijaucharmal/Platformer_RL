@@ -144,6 +144,8 @@ ENetPeer* NetworkClient::ConnectToServerUI(Player *player) {
             const std::string host = std::to_string(server_ip[0]) + "." + std::to_string(server_ip[1]) + "." + std::to_string(server_ip[2]) + "." + std::to_string(server_ip[3]);
 
             const int error_code = ConnectToServer(host, port);
+            // Send Player username to register
+            SendPacket("1|" + player->username);
 
             if (!error_code) ConnectWindow = false;
             else {

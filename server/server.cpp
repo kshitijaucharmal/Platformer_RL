@@ -21,7 +21,6 @@ void ParseData(ENetHost* server, int id, char * data){
         /* code */
         break;
     case 2:
-        // TODO: C code, convert to cpp
         char username[80];
         sscanf(data, "2|%[^\n]", &username);
 
@@ -73,13 +72,6 @@ int main(int argc, char ** argv){
                  );
                 break;
             case ENET_EVENT_TYPE_RECEIVE:
-                // printf ("A packet of length %u containing %s was received from %x:%u on channel %u.\n",
-                //     event.packet -> dataLength,
-                //     event.packet -> data,
-                //     event.peer -> address.host,
-                //     event.peer -> address.port,
-                //     event.channelID);
-
                 printf("%s\n", event.packet->data);
 
                 // ParseData(server, -1, (char*)event.packet->data);
