@@ -1,6 +1,7 @@
 #include <iostream>
 #include <enet/enet.h>
 #include <string>
+#include <sstream>
 
 #define PORT 1234
 void SendPacket(ENetPeer* peer, std::string data){
@@ -9,26 +10,49 @@ void SendPacket(ENetPeer* peer, std::string data){
     enet_peer_send(peer, 0, packet);
 }
 
-void ParseData(ENetHost* server, int id, char * data){
-    std::cout << "Parse: " << data << "\n";
+void ParseData(ENetHost* server, int id, const char* data) {
+    std::stringstream ss(data);
+    std::string token;
 
-    int data_type;
-    sscanf(data, "%d|", &data_type);
+    // Get data_type (first field)
+    if (!std::getline(ss, token, '|')) return;
+    int data_type = std::stoi(token);
 
-    switch (data_type)
-    {
-    case 1:
-        /* code */
-        break;
-    case 2:
-        char username[80];
-        sscanf(data, "2|%[^\n]", &username);
+    std::string username;
+    std::string extra;
 
-        char send_data[1024] = {'\0'};
-        sprintf(send_data, "2|%d|%s", id, username);
-
-        std::cout << "Send: " << send_data << std::endl;
-        break;
+    switch (data_type) {
+        case 1: {
+            // 1|username
+            if (std::getline(ss, username)) {
+                std::cout << username << " Registered." << std::endl;
+            }
+            break;
+        }
+        case 2: {
+            // 2|username|ready
+            if (std::getline(ss, username, '|') && std::getline(ss, extra)) {
+                // extra is ready (string, can be "0", "1", or anything else)
+                std::cout << username << " ready:" << extra << std::endl;
+            }
+            break;
+        }
+        case 3: {
+            // 3|username|player_dat
+            if (std::getline(ss, username, '|') && std::getline(ss, extra)) {
+                std::string player_dat = extra;
+                std::cout << username << player_dat << std::endl;
+            }
+            break;
+        }
+        case 4: {
+            // 4|username
+            if (std::getline(ss, username)) {
+                std::cout << username << " Disconnected." << std::endl;
+            }
+            break;
+        }
+        default: break;
     }
 }
 
@@ -72,9 +96,9 @@ int main(int argc, char ** argv){
                  );
                 break;
             case ENET_EVENT_TYPE_RECEIVE:
-                printf("%s\n", event.packet->data);
+                // printf("%s\n", event.packet->data);
 
-                // ParseData(server, -1, (char*)event.packet->data);
+                ParseData(server, -1, reinterpret_cast<char *>(event.packet->data));
                 enet_packet_destroy(event.packet);
 
                 // SendPacket(event.peer, "Received - ACK");
