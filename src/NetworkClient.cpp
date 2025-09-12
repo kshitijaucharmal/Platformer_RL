@@ -22,13 +22,7 @@ int recvCount = 0;
             switch (event.type)
             {
                 case ENET_EVENT_TYPE_RECEIVE:
-                    printf ("%d A packet of length %d containing %s was received from %x:%u on channel %u.\n",
-                        recvCount++,
-                        event.packet -> dataLength,
-                        event.packet -> data,
-                        event.peer -> address.host,
-                        event.peer -> address.port,
-                        event.channelID);
+                    printf("%s\n", event.packet->data);
                     enet_packet_destroy(event.packet);
                     break;
 
