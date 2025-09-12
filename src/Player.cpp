@@ -116,6 +116,8 @@ void Player::Update(float dt) {
 }
 
 void Player::Draw() {
+    DrawText(username.data(), position.x - 9, position.y - 20, 18, BLACK);
+
     DrawRectangleRounded(
         Rectangle{ position.x, position.y,size.x, size.y},
         0.2,

@@ -49,6 +49,7 @@ void ParsePlayerInfo(std::string& username, std::string& player_data) {
     players[username].position.x = values[0];
     players[username].position.y = values[1];
 
+    // std::cout << username << player_data << std::endl;
 }
 
 void SendPacket(ENetPeer* peer, std::string msg){
@@ -96,6 +97,7 @@ void ParseData(ENetEvent& event, ENetHost* server, int id, const char* data) {
                 std::string player_data = extra;
                 if (players.find(username) == players.end()) {
                     std::cout << username << ": player not in game\n" << std::endl;
+                    break;
                 }
 
                 ParsePlayerInfo(username, player_data);
@@ -110,26 +112,34 @@ void ParseData(ENetEvent& event, ENetHost* server, int id, const char* data) {
             }
             break;
         }
-        default: break;
     }
 }
 
+std::mutex playersMutex;
+
 void BroadcastPositions() {
-    while(true) {
-        std::string send_data= "3|" + std::to_string(players.size()) + "|";
-        // Gathers up the sendData
-        // Data format: "3|[name2:x,y]|[name2:x,y]"
-        for (auto [username, settings] : players) {
-            send_data += "[" + username + ":" + std::to_string(settings.position.x) + "," + std::to_string(settings.position.y) + "]|";
-        }
-        // Remove the last |
-        send_data.pop_back();
-        // Send to all clients
-        for (auto [username, settings] : players) {
-            SendPacket(settings.peer, send_data);
+    while (true) {
+        std::string send_data;
+
+        {   // Scope lock
+            std::lock_guard<std::mutex> lock(playersMutex);
+
+            send_data = "3|" + std::to_string(players.size()) + "|";
+            for (auto& [username, settings] : players) {
+                send_data += "[" + username + ":" +
+                             std::to_string(settings.position.x) + "," +
+                             std::to_string(settings.position.y) + "]|";
+            }
+            send_data.pop_back(); // remove last '|'
         }
 
-        // Sleep for 10 ms (Basically send every 10 ms)
+        {   // Send to clients (also lock if `players` may change peer references)
+            std::lock_guard<std::mutex> lock(playersMutex);
+            for (auto& [username, settings] : players) {
+                SendPacket(settings.peer, send_data);
+            }
+        }
+
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
@@ -190,7 +200,6 @@ int main(int argc, char ** argv){
 
                 // If sending data, set it to null
                 event.peer->data = nullptr;
-                thread.join();
                 break;
             
             default:
@@ -199,6 +208,7 @@ int main(int argc, char ** argv){
         }
     }
 
+    thread.join();
     // Game loop END
 
     enet_host_destroy(server);
