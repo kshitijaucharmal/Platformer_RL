@@ -24,8 +24,6 @@ public:
     ENetHost* client;
 
     ENetPeer* ConnectToServerUI(Player* player);
-
     int ConnectToServer(std::string host, int port);
-
     int Disconnect();
 };

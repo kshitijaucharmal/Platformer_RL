@@ -116,7 +116,7 @@ void ParseData(ENetEvent& event, ENetHost* server, int id, const char* data) {
 
 void BroadcastPositions() {
     while(true) {
-        std::string send_data= "3|";
+        std::string send_data= "3|" + std::to_string(players.size()) + "|";
         // Gathers up the sendData
         // Data format: "3|[name2:x,y]|[name2:x,y]"
         for (auto [username, settings] : players) {

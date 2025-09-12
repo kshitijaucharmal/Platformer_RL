@@ -60,4 +60,6 @@ int Game::Loop(NetworkClient& networkClient, CameraManager &camera_manager) {
     }
     CloseWindow();        // Close window and OpenGL context
 
+    return EXIT_SUCCESS;
+
 }

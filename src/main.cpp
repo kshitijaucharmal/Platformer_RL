@@ -5,6 +5,7 @@
 #include "Camera.hpp"
 #include "Constants.hpp"
 #include "Game.hpp"
+#include "Global.hpp"
 #include "LevelGenerator.hpp"
 #include "raylib.h"
 #include "Player.hpp"
@@ -22,6 +23,7 @@ int gamepad = 2; // which gamepad to display
 
 // Networking
 #define PORT 8080
+Global Global::instance;
 
 //------------------------------------------------------------------------------------
 // Program main entry point

@@ -38,6 +38,7 @@ public:
     float jumpBufferCounter;
 
     Player(Vector2 pos);
+    Player() : Player(Vector2(0, 0)) {}
     ~Player();
 
     void GetInputs();

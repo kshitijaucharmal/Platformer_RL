@@ -8,25 +8,68 @@
 #include "rlImGui.h"
 #include <iostream>
 #include <string>
+#include <thread>
+#include <unordered_map>
+#include "Global.hpp"
 
 NetworkClient::NetworkClient() {
 
 }
 
-int recvCount = 0;
+std::unordered_map<std::string, PlayerSettings> parseData(const std::string& data) {
+    std::unordered_map<std::string, PlayerSettings> result;
 
-[[noreturn]] void* MsgLoop(void* client){
+    // Find the position after the second '|'
+    size_t firstSep = data.find('|');
+    if (firstSep == std::string::npos) return result;
+    size_t secondSep = data.find('|', firstSep + 1);
+    if (secondSep == std::string::npos) return result;
+
+    size_t start = secondSep + 1;
+
+    while (start < data.size()) {
+        if (data[start] != '[') {
+            start++;
+            continue;
+        }
+
+        size_t end = data.find(']', start);
+        if (end == std::string::npos) break;
+
+        std::string block = data.substr(start + 1, end - start - 1);
+        // block looks like: "name:x,y"
+
+        size_t colon = block.find(':');
+        size_t comma = block.find(',');
+
+        if (colon != std::string::npos && comma != std::string::npos) {
+            std::string name = block.substr(0, colon);
+            float x = std::stof(block.substr(colon + 1, comma - colon - 1));
+            float y = std::stof(block.substr(comma + 1));
+
+            result[name] = PlayerSettings{Vector2{x, y}};
+        }
+
+        start = end + 1; // Move to next
+    }
+
+    return result;
+}
+
+
+void* MsgLoop(void* client){
     while(true){
         ENetEvent event;
         while(enet_host_service((ENetHost*)client, &event, 0) > 0){
             switch (event.type)
             {
                 case ENET_EVENT_TYPE_RECEIVE:
-                    printf("%s\n", event.packet->data);
-                    enet_packet_destroy(event.packet);
-                    break;
 
-                default:
+                    std::string pdata = reinterpret_cast<char *>(event.packet->data);
+                    auto parsed = parseData(pdata);
+                    Global::Get().players = std::move(parsed);
+
+                    enet_packet_destroy(event.packet);
                     break;
             }
         }
