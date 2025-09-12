@@ -22,7 +22,7 @@ int recvCount = 0;
             switch (event.type)
             {
                 case ENET_EVENT_TYPE_RECEIVE:
-                    printf ("%d A packet of length %lu containing %p was received from %x:%u on channel %u.\n",
+                    printf ("%d A packet of length %d containing %s was received from %x:%u on channel %u.\n",
                         recvCount++,
                         event.packet -> dataLength,
                         event.packet -> data,

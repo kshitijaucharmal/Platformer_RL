@@ -33,7 +33,7 @@ void Lobby::Loop(NetworkClient& networkClient, CameraManager& camera_manager) {
         player.Update(dt);
 
         player.CheckCollisions(world);
-        networkClient.SendPacket("3|" + player.username + "|[" + std::to_string(player.position.x) + "," + std::to_string(player.position.y) + "]");
+        networkClient.SendPacket("3|" + player.username + "|[" + std::to_string(player.position.x) + "," + std::to_string(player.position.y) + "]:");
 
         camera_manager.Update(player.position);
         //----------------------------------------------------------------------------------

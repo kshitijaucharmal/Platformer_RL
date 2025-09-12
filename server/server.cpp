@@ -1,16 +1,60 @@
 #include <iostream>
+#include <raylib.h>
 #include <enet/enet.h>
 #include <string>
 #include <sstream>
+#include <unordered_map>
+#include <vector>
 
 #define PORT 1234
-void SendPacket(ENetPeer* peer, std::string data){
-    ENetPacket* packet = enet_packet_create(data.data(), data.size(), ENET_PACKET_FLAG_RELIABLE);
+
+struct PlayerSettings {
+    ENetPeer* peer;
+    bool ready = false;
+
+    // data received
+    Vector2 position = Vector2(0, 0);
+};
+
+std::unordered_map<std::string, PlayerSettings> players;
+
+void ParsePlayerInfo(std::string& username, std::string& player_data) {
+    const size_t start = player_data.find('[');
+    const size_t end = player_data.find(']');
+
+    if (start == std::string::npos || end == std::string::npos || start > end) {
+        std::cout << "Not correct position format" << std::endl;
+        return;
+    }
+
+    std::string numbers = player_data.substr(start + 1, end - start - 1);
+
+    // Split by comma
+    std::stringstream ss(numbers);
+    std::string token;
+    std::vector<float> values;
+
+    while (std::getline(ss, token, ',')) {
+        values.push_back(std::stof(token));
+    }
+
+    if (values.size() != 2) {
+        std::cout << "Expected exactly two numbers" << std::endl;
+        return;
+    }
+
+    players[username].position.x = values[0];
+    players[username].position.y = values[1];
+
+}
+
+void SendPacket(ENetPeer* peer, std::string msg){
+    ENetPacket* packet = enet_packet_create(msg.data(), msg.size(), ENET_PACKET_FLAG_RELIABLE);
     // Channel 0
     enet_peer_send(peer, 0, packet);
 }
 
-void ParseData(ENetHost* server, int id, const char* data) {
+void ParseData(ENetEvent& event, ENetHost* server, int id, const char* data) {
     std::stringstream ss(data);
     std::string token;
 
@@ -25,23 +69,33 @@ void ParseData(ENetHost* server, int id, const char* data) {
         case 1: {
             // 1|username
             if (std::getline(ss, username)) {
-                std::cout << username << " Registered." << std::endl;
+                if (players.find(username) != players.end()) {
+                    std::cout <<  "Username: " << username << " is already present in the game" << std::endl;
+                }
+                else {
+                    std::cout << username << " Registered." << std::endl;
+                    players[username] = PlayerSettings{event.peer};
+                }
             }
             break;
         }
         case 2: {
             // 2|username|ready
             if (std::getline(ss, username, '|') && std::getline(ss, extra)) {
-                // extra is ready (string, can be "0", "1", or anything else)
-                std::cout << username << " ready:" << extra << std::endl;
+                players[username].ready = std::stoi(extra);
+                std::cout << username << " ready:" << players[username].ready << std::endl;
             }
             break;
         }
         case 3: {
             // 3|username|player_dat
             if (std::getline(ss, username, '|') && std::getline(ss, extra)) {
-                std::string player_dat = extra;
-                std::cout << username << player_dat << std::endl;
+                std::string player_data = extra;
+                if (players.find(username) == players.end()) {
+                    std::cout << username << ": player not in game\n" << std::endl;
+                }
+
+                ParsePlayerInfo(username, player_data);
             }
             break;
         }
@@ -49,6 +103,7 @@ void ParseData(ENetHost* server, int id, const char* data) {
             // 4|username
             if (std::getline(ss, username)) {
                 std::cout << username << " Disconnected." << std::endl;
+                players.erase(username);
             }
             break;
         }
@@ -94,14 +149,14 @@ int main(int argc, char ** argv){
                     event.peer->address.host,
                     event.peer->address.port
                  );
+                SendPacket(event.peer, "Received - ACK");
                 break;
             case ENET_EVENT_TYPE_RECEIVE:
                 // printf("%s\n", event.packet->data);
 
-                ParseData(server, -1, reinterpret_cast<char *>(event.packet->data));
+                ParseData(event, server, -1, reinterpret_cast<char *>(event.packet->data));
                 enet_packet_destroy(event.packet);
 
-                // SendPacket(event.peer, "Received - ACK");
                 break;
             case ENET_EVENT_TYPE_DISCONNECT:
                 printf("%x:%u disconnected.\n",
