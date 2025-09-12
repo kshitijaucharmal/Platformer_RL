@@ -5,6 +5,9 @@
 #include <sstream>
 #include <unordered_map>
 #include <vector>
+#include <regex>
+#include <chrono>
+#include <thread>
 
 #define PORT 1234
 
@@ -111,6 +114,26 @@ void ParseData(ENetEvent& event, ENetHost* server, int id, const char* data) {
     }
 }
 
+void BroadcastPositions() {
+    while(true) {
+        std::string send_data= "3|";
+        // Gathers up the sendData
+        // Data format: "3|[name2:x,y]|[name2:x,y]"
+        for (auto [username, settings] : players) {
+            send_data += "[" + username + ":" + std::to_string(settings.position.x) + "," + std::to_string(settings.position.y) + "]|";
+        }
+        // Remove the last |
+        send_data.pop_back();
+        // Send to all clients
+        for (auto [username, settings] : players) {
+            SendPacket(settings.peer, send_data);
+        }
+
+        // Sleep for 10 ms (Basically send every 10 ms)
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+}
+
 int main(int argc, char ** argv){
     if(enet_initialize() != 0){
         fprintf(stderr, "Error initialising Enet\n");
@@ -140,10 +163,11 @@ int main(int argc, char ** argv){
 
     // Game loop START
 
+    std::thread thread(BroadcastPositions);
+
     while(true){
         while(enet_host_service(server, &event, 1000) > 0){
-            switch (event.type)
-            {
+            switch (event.type) {
             case ENET_EVENT_TYPE_CONNECT:
                 printf("New Client Connected %x:%u\n",
                     event.peer->address.host,
@@ -166,6 +190,7 @@ int main(int argc, char ** argv){
 
                 // If sending data, set it to null
                 event.peer->data = nullptr;
+                thread.join();
                 break;
             
             default:
@@ -173,7 +198,7 @@ int main(int argc, char ** argv){
             }
         }
     }
-    
+
     // Game loop END
 
     enet_host_destroy(server);
