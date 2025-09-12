@@ -16,14 +16,12 @@ NetworkClient::NetworkClient() {
 
 }
 
-std::unordered_map<std::string, PlayerSettings> parseData(const std::string& data) {
-    std::unordered_map<std::string, PlayerSettings> result;
-
+void parseData(const std::string& data) {
     // Find the position after the second '|'
     size_t firstSep = data.find('|');
-    if (firstSep == std::string::npos) return result;
+    if (firstSep == std::string::npos) return;
     size_t secondSep = data.find('|', firstSep + 1);
-    if (secondSep == std::string::npos) return result;
+    if (secondSep == std::string::npos) return;
 
     size_t start = secondSep + 1;
 
@@ -42,20 +40,23 @@ std::unordered_map<std::string, PlayerSettings> parseData(const std::string& dat
         size_t colon = block.find(':');
         size_t comma = block.find(',');
 
+        auto& players = Global::Get().players;
         if (colon != std::string::npos && comma != std::string::npos) {
             std::string name = block.substr(0, colon);
             float x = std::stof(block.substr(colon + 1, comma - colon - 1));
             float y = std::stof(block.substr(comma + 1));
 
-            result[name] = PlayerSettings{Vector2{x, y}};
+            if (players.contains(name)) {
+                players[name].position = Vector2(x, y);
+            }
+            else {
+                players[name] = PlayerSettings(Vector2(x, y));
+            }
         }
 
         start = end + 1; // Move to next
     }
-
-    return result;
 }
-
 
 void* MsgLoop(void* client){
     while(true){
@@ -66,8 +67,7 @@ void* MsgLoop(void* client){
                 case ENET_EVENT_TYPE_RECEIVE:
 
                     std::string pdata = reinterpret_cast<char *>(event.packet->data);
-                    auto parsed = parseData(pdata);
-                    Global::Get().players = std::move(parsed);
+                    parseData(pdata);
 
                     enet_packet_destroy(event.packet);
                     break;

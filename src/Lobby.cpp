@@ -28,10 +28,13 @@ void Lobby::UpdateOtherPlayers() {
 
         if (!otherPlayers.contains(name)) {
             otherPlayers[name] = Player(settings.position);
+            otherPlayers[name].username = name;
         }
 
         otherPlayers[name].position = settings.position;
+        // std::cout << name << " updated pos: " << settings.position.x << ", " << settings.position.y << std::endl;
     }
+    // std::cout << std::endl;
 }
 
 bool ready;
@@ -44,13 +47,13 @@ void Lobby::Loop(NetworkClient& networkClient, CameraManager& camera_manager) {
         player.GetInputs();
 
         world.Update(dt);
-        UpdateOtherPlayers();
         player.Update(dt);
 
         player.CheckCollisions(world);
         networkClient.SendPacket("3|" + player.username + "|[" + std::to_string(player.position.x) + "," + std::to_string(player.position.y) + "]:");
 
         camera_manager.Update(player.position);
+        UpdateOtherPlayers();
         //----------------------------------------------------------------------------------
 
         // Draw
