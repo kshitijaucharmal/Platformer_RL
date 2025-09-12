@@ -9,6 +9,7 @@
 #include <bits/ostream.tcc>
 
 #include "Camera.hpp"
+#include "Global.hpp"
 #include "NetworkClient.hpp"
 #include "rlImGui.h"
 
@@ -20,6 +21,19 @@ Lobby::Lobby(LevelGenerator& lvlGen, World& world, Player& player): world(world)
 bool Lobby::IsEveryoneReady() {
     return false;
 }
+
+void Lobby::UpdateOtherPlayers() {
+    for (const auto& [name, settings] : Global::Get().players) {
+        if (name == player.username) continue;
+
+        if (!otherPlayers.contains(name)) {
+            otherPlayers[name] = Player(settings.position);
+        }
+
+        otherPlayers[name].position = settings.position;
+    }
+}
+
 bool ready;
 void Lobby::Loop(NetworkClient& networkClient, CameraManager& camera_manager) {
     while (!WindowShouldClose())    // Detect window close button or ESC key
@@ -30,6 +44,7 @@ void Lobby::Loop(NetworkClient& networkClient, CameraManager& camera_manager) {
         player.GetInputs();
 
         world.Update(dt);
+        UpdateOtherPlayers();
         player.Update(dt);
 
         player.CheckCollisions(world);
@@ -45,6 +60,11 @@ void Lobby::Loop(NetworkClient& networkClient, CameraManager& camera_manager) {
         BeginMode2D(camera_manager.camera);
         world.Draw();
         player.Draw();
+
+        for (const auto& [name, settings] : Global::Get().players) {
+            if (name == player.username) continue;
+            if (otherPlayers.contains(name)) otherPlayers[name].Draw();
+        }
 
         EndMode2D();
 

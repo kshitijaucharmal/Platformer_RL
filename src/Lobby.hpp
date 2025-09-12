@@ -16,7 +16,10 @@ public:
     World& world;
     Player& player;
 
+    std::unordered_map<std::string, Player> otherPlayers;
+
     bool isReady = false;
+    void UpdateOtherPlayers();
 
     bool IsEveryoneReady();
     void Loop(NetworkClient& networkClient, CameraManager& camera_manager);
