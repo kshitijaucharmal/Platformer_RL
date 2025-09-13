@@ -10,6 +10,7 @@
 #include <thread>
 
 #define PORT 1234
+#define TIME_BETWEEN_BROADCAST 5
 
 struct PlayerSettings {
     ENetPeer* peer;
@@ -140,7 +141,7 @@ void BroadcastPositions() {
             }
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(TIME_BETWEEN_BROADCAST));
     }
 }
 
