@@ -43,18 +43,17 @@ sudo apt install libraylib-dev libenet-dev cmake build-essential
 Build:
 
 ```bash
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
-mkdir build && cd build
-cmake ..
-make -j$(nproc)
+git clone https://github.com/kshitijaucharmal/Platformer_RL.git
+cd Platformer_RL
+cmake -S . -B build
+cmake --build build -j$(nproc)
 ```
 
 Run:
 
 ```bash
-./server   # start server
-./client   # run client(s)
+./build/server   # start server
+./build/client   # run client(s)
 ```
 
 ---
@@ -69,13 +68,13 @@ Run:
 2. Clone and build:
 
    ```powershell
-   git clone https://github.com/<your-username>/<your-repo>.git
-   cd <your-repo>
+   git clone https://github.com/kshitijaucharmal/Platformer_RL.git
+   cd Platformer_RL
    mkdir build && cd build
    cmake .. -DCMAKE_TOOLCHAIN_FILE=[path-to-vcpkg]/scripts/buildsystems/vcpkg.cmake
    cmake --build . --config Release
    ```
-3. Run the `server.exe` and `client.exe` binaries.
+3. Run the `server.exe` and `client.exe` binaries in the build folder.
 
 ---
 
@@ -90,18 +89,17 @@ brew install raylib enet cmake
 Build:
 
 ```bash
-git clone https://github.com/<your-username>/<your-repo>.git
-cd <your-repo>
-mkdir build && cd build
-cmake ..
-make -j$(sysctl -n hw.ncpu)
+git clone https://github.com/kshitijaucharmal/Platformer_RL.git
+cd Platformer_RL
+cmake -S . -B build
+cmake --build build -j$(sysctl -n hw.ncpu)
 ```
 
 Run:
 
 ```bash
-./server
-./client
+./build/server
+./build/client
 ```
 
 ---
@@ -115,12 +113,12 @@ Run:
 * [x] Sending basic info (positions only for now)
 * [x] Lerping positions
 * [ ] System for sending any data (batched)
+* [ ] Hosting server online (Google Cloud)
 * [ ] Techniques to compress packets
 * [ ] Deterministic lockstep **or** snapshot interpolation (experiment & decide)
 * [ ] Shooting guns in-game
 * [ ] Simple upgrade system
 * [ ] Gameover screen, lobby, and main menu (ImGui-based)
-* [ ] Hosting server online (Google Cloud)
 
 ---
 
