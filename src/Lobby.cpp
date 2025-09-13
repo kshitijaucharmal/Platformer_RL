@@ -22,6 +22,10 @@ bool Lobby::IsEveryoneReady() {
     return false;
 }
 
+Vector2 Lerp(Vector2 a, Vector2 b, float t) {
+    return a + (b - a) * t;
+}
+
 void Lobby::UpdateOtherPlayers() {
     for (const auto& [name, settings] : Global::Get().players) {
         if (name == player.username) continue;
@@ -31,7 +35,7 @@ void Lobby::UpdateOtherPlayers() {
             otherPlayers[name].username = name;
         }
 
-        otherPlayers[name].position = settings.position;
+        otherPlayers[name].position = Lerp(otherPlayers[name].position, settings.position, 0.6f);
         // std::cout << name << " updated pos: " << settings.position.x << ", " << settings.position.y << std::endl;
     }
     // std::cout << std::endl;
