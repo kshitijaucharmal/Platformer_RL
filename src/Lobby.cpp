@@ -6,7 +6,7 @@
 
 #include <imgui.h>
 #include <iostream>
-#include <bits/ostream.tcc>
+#include <ostream>
 
 #include "Camera.hpp"
 #include "Global.hpp"

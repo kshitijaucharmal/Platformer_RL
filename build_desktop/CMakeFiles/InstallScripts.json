@@ -1,0 +1,12 @@
+{
+	"InstallScripts" : 
+	[
+		"/mnt/Data/projects/cpp/Platformer_RL/build_desktop/cmake_install.cmake",
+		"/mnt/Data/projects/cpp/Platformer_RL/build_desktop/external/raylib/cmake_install.cmake",
+		"/mnt/Data/projects/cpp/Platformer_RL/build_desktop/external/raylib/raylib/cmake_install.cmake",
+		"/mnt/Data/projects/cpp/Platformer_RL/build_desktop/external/raylib/raylib/external/glfw/cmake_install.cmake",
+		"/mnt/Data/projects/cpp/Platformer_RL/build_desktop/external/raylib/raylib/external/glfw/src/cmake_install.cmake",
+		"/mnt/Data/projects/cpp/Platformer_RL/build_desktop/external/enet/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

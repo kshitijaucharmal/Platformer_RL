@@ -5,7 +5,7 @@
 #include "GameObject.hpp"
 
 #include <iostream>
-#include <bits/ostream.tcc>
+#include <ostream>
 
 #include "raymath.h"
 
